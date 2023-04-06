@@ -8,7 +8,9 @@ imports:
     - { resource: "@SyliusApiBundle/Resources/config/app/config.yaml" }
 
     - { resource: "@SyliusShopBundle/Resources/config/app/config.yml" }
-    - { resource: "../resources/*" }
+
+    - { resource: "./../../src/Resources/config/resources/*" }
+    - { resource: "./../../src/Resources/config/state_machine/**/*.yml" }
 
 parameters:
     sylius_core.public_dir: '%kernel.project_dir%/public'
