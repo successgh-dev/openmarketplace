@@ -6,3 +6,4 @@ imports:
     - { resource: 'email/*.yml'}
     - { resource: "ui.yml"}
     - { resource: "fixtures.yml"}
+    - { resource: "doctrine_migrations/**/*.yml"}
