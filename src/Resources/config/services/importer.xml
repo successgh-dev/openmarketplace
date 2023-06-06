@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<container xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://symfony.com/schema/dic/services"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+    <services>
+        <service class="BitBag\OpenMarketplace\Cli\ProductImportCommand"
+                 id="open_marketplace.import.product.command">
+            <argument type="service" id="bitbag_sylius_cms_plugin.processor.import" />
+            <tag name="console.command"/>
+        </service>
+
+        <service class="BitBag\OpenMarketplace\Importer\Common\Reader\CsvReader"
+                 id="bitbag_sylius_cms_plugin.reader.csv" />
+
+        <service class="BitBag\OpenMarketplace\Importer\Product\ProductImporter"
+                 id="open_marketplace.import.product.importer">
+            <argument type="service" id="open_marketplace.import.product.resolver" />
+            <argument type="service" id="open_marketplace.repository.vendor" />
+            <argument type="service" id="doctrine.orm.entity_manager" />
+            <argument type="service" id="open_marketplace.acceptance_operator.product_draft_acceptance_operator" />
+            <argument type="tagged_iterator" tag="open_marketplace.import.product.clearer" />
+            <argument type="tagged_iterator" tag="open_marketplace.import.product.handler" />
+            <tag name="bitbag.cmsplugin.importer"/>
+        </service>
+
+        <service class="BitBag\OpenMarketplace\Importer\Product\Resolver\ProductResourceResolver"
+                 id="open_marketplace.import.product.resolver">
+            <argument type="service" id="open_marketplace.repository.product_listing" />
+            <argument type="service" id="open_marketplace.factory.product_draft" />
+            <argument type="service" id="open_marketplace.factory.product_listing_from_draft_factory" />
+        </service>
+
+        <service class="BitBag\OpenMarketplace\Importer\Product\Clearer\ProductDraftAttributeClearer"
+                 id="open_marketplace.import.product.clearer.product_attribute">
+            <tag name="open_marketplace.import.product.clearer" />
+        </service>
+
+        <service class="BitBag\OpenMarketplace\Importer\Product\Clearer\ProductDraftImageClearer"
+                 id="open_marketplace.import.product.clearer.product_image">
+            <argument type="service" id="open_marketplace.repository.product_draft_image" />
+            <tag name="open_marketplace.import.product.clearer" />
+        </service>
+
+        <service class="BitBag\OpenMarketplace\Importer\Product\Handler\ProductDraftImageHandler"
+                 id="open_marketplace.import.product.handler.product_draft_image">
+            <argument type="service" id="open_marketplace.factory.product_draft_image" />
+            <argument type="service" id="sylius.image_uploader" />
+            <argument type="service" id="logger" />
+            <argument type="service" id="open_marketplace.import.product.clearer.product_image" />
+            <argument type="service" id="doctrine.orm.entity_manager" />
+            <argument>%kernel.project_dir%</argument>
+            <argument>%env(TEMP_MEDIA_PATH)%</argument>
+            <tag name="open_marketplace.import.product.handler" />
+        </service>
+
+        <service class="BitBag\OpenMarketplace\Importer\Product\Handler\ProductDraftTaxonHandler"
+                 id="open_marketplace.import.product.handler.product_draft_taxon">
+            <argument type="service" id="sylius.repository.taxon" />
+            <argument type="service" id="open_marketplace.factory.product_draft_taxons" />
+            <argument type="service" id="open_marketplace.repository.product_draft_taxons" />
+            <tag name="open_marketplace.import.product.handler" />
+        </service>
+
+        <service class="BitBag\OpenMarketplace\Importer\Product\Handler\ProductDraftTranslationHandler"
+                 id="open_marketplace.import.product.handler.product_draft_translation">
+            <argument type="service" id="open_marketplace.factory.product_translation" />
+            <argument type="service" id="open_marketplace.repository.product_translation" />
+            <argument type="service" id="sylius.context.locale" />
+            <argument type="service" id="sylius.generator.slug" />
+            <tag name="open_marketplace.import.product.handler" />
+        </service>
+
+        <service class="BitBag\OpenMarketplace\Importer\Product\Handler\ProductDraftPriceHandler"
+                 id="open_marketplace.import.product.handler.product_listing_price">
+            <argument type="service" id="sylius.repository.channel" />
+            <argument type="service" id="open_marketplace.import.product.factory.product_listing_price" />
+            <argument type="service" id="logger" />
+            <tag name="open_marketplace.import.product.handler" />
+        </service>
+
+        <service class="BitBag\OpenMarketplace\Importer\Product\Handler\ProductDraftShippingHandler"
+                 id="open_marketplace.import.product.handler.product_draft_shipping">
+            <argument type="service" id="sylius.repository.shipping_category" />
+            <argument type="service" id="logger" />
+            <tag name="open_marketplace.import.product.handler" />
+        </service>
+
+        <service class="BitBag\OpenMarketplace\Importer\Product\Handler\Attribute\ProductDraftAttributeHandler"
+                 id="open_marketplace.import.product.handler.product_draft_attribute">
+            <argument type="service" id="open_marketplace.repository.draft_attribute" />
+            <argument type="service" id="open_marketplace.factory.draftAttribute"  />
+            <argument type="service" id="open_marketplace.import.product.factory.draft_attribute_translation" />
+            <argument type="service" id="open_marketplace.import.product.factory.draft_attribute_value" />
+            <argument type="service" id="doctrine.orm.entity_manager" />
+            <argument type="service" id="sylius.context.locale" />
+            <tag name="open_marketplace.import.product.handler" />
+        </service>
+
+
+        <service class="BitBag\OpenMarketplace\Importer\Product\Factory\DraftAttributeValueFactory"
+                 id="open_marketplace.import.product.factory.draft_attribute_value"/>
+
+        <service class="BitBag\OpenMarketplace\Importer\Product\Factory\DraftAttributeTranslationFactory"
+                 id="open_marketplace.import.product.factory.draft_attribute_translation"/>
+
+        <service class="BitBag\OpenMarketplace\Importer\Product\Factory\ProductListingPriceFactory"
+                 id="open_marketplace.import.product.factory.product_listing_price"/>
+    </services>
+</container>

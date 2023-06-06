@@ -12,8 +12,9 @@ declare(strict_types=1);
 namespace BitBag\OpenMarketplace\Repository\ProductListing;
 
 use BitBag\OpenMarketplace\Entity\ProductListing\ProductTranslationInterface;
+use Sylius\Component\Resource\Repository\RepositoryInterface;
 
-interface ProductTranslationRepositoryInterface
+interface ProductTranslationRepositoryInterface extends RepositoryInterface
 {
     public function save(ProductTranslationInterface $productTranslation): void;
 
