@@ -14,6 +14,7 @@ namespace spec\BitBag\OpenMarketplace\Cli;
 use BitBag\OpenMarketplace\Cli\ProductImportCommand;
 use BitBag\SyliusCmsPlugin\Processor\ImportProcessorInterface;
 use PhpSpec\ObjectBehavior;
+use Symfony\Component\Console\Command\Command;
 
 final class ProductImportCommandSpec extends ObjectBehavior
 {
@@ -25,5 +26,16 @@ final class ProductImportCommandSpec extends ObjectBehavior
     public function it_is_initializable(): void
     {
         $this->shouldHaveType(ProductImportCommand::class);
+    }
+
+    public function it_is_a_command(): void
+    {
+        $this->shouldBeAnInstanceOf(Command::class);
+    }
+
+    public function it_should_contain_product_import_related_properties(): void
+    {
+        $this->getResourceName()->shouldBe('product');
+        $this->getName()->shouldBe('open-marketplace:product:import');
     }
 }
