@@ -31,7 +31,7 @@ final class DraftAttributeValueFactory implements DraftAttributeValueFactoryInte
     ): DraftAttributeValueInterface {
         $draftAttributeValue = $this->createNew();
         $draftAttributeValue->setAttribute($attribute);
-        $draftAttributeValue->setSubject($productDraft);
+        $draftAttributeValue->setDraft($productDraft);
         $draftAttributeValue->setValue($value);
         $draftAttributeValue->setLocaleCode($localeCode);
 

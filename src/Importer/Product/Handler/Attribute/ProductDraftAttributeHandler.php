@@ -13,9 +13,28 @@ namespace BitBag\OpenMarketplace\Importer\Product\Handler\Attribute;
 
 use BitBag\OpenMarketplace\Entity\ProductListing\ProductDraftInterface;
 use BitBag\OpenMarketplace\Entity\VendorInterface;
+use BitBag\OpenMarketplace\Factory\DraftAttributeFactoryInterface;
+use BitBag\OpenMarketplace\Importer\Product\Clearer\ProductDraftRelationsClearerInterface;
+use BitBag\OpenMarketplace\Importer\Product\Factory\DraftAttributeTranslationFactoryInterface;
+use BitBag\OpenMarketplace\Importer\Product\Factory\DraftAttributeValueFactoryInterface;
+use Doctrine\ORM\EntityManagerInterface;
+use Sylius\Component\Locale\Context\LocaleContextInterface;
+use Sylius\Component\Resource\Repository\RepositoryInterface;
 
 final class ProductDraftAttributeHandler extends AbstractAttributeHandler
 {
+    public function __construct(
+        RepositoryInterface $draftAttributeRepository,
+        DraftAttributeFactoryInterface $draftAttributeFactory,
+        DraftAttributeTranslationFactoryInterface $draftAttributeTranslationFactory,
+        DraftAttributeValueFactoryInterface $draftAttributeValueFactory,
+        EntityManagerInterface $entityManager,
+        LocaleContextInterface $localeContext,
+        private ProductDraftRelationsClearerInterface $productDraftAttributeClearer
+    ) {
+        parent::__construct($draftAttributeRepository, $draftAttributeFactory, $draftAttributeTranslationFactory, $draftAttributeValueFactory, $entityManager, $localeContext);
+    }
+
     protected static string $dataKey = 'attributes';
 
     public function handle(
@@ -28,6 +47,8 @@ final class ProductDraftAttributeHandler extends AbstractAttributeHandler
         ) {
             return;
         }
+
+        $this->productDraftAttributeClearer->clear($productDraft);
 
         foreach (json_decode($row[self::$dataKey], true) as $index => $attributeData) {
             $this->handleProductAttribute(

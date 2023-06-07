@@ -14,7 +14,6 @@ namespace BitBag\OpenMarketplace\Importer\Product;
 use BitBag\OpenMarketplace\AcceptanceOperator\ProductDraftAcceptanceOperatorInterface;
 use BitBag\OpenMarketplace\Entity\ProductListing\ProductDraftInterface;
 use BitBag\OpenMarketplace\Entity\VendorInterface;
-use BitBag\OpenMarketplace\Importer\Product\Clearer\ProductDraftRelationsClearerInterface;
 use BitBag\OpenMarketplace\Importer\Product\Handler\ProductHandlerInterface;
 use BitBag\OpenMarketplace\Importer\Product\Resolver\ProductResourceResolverInterface;
 use BitBag\SyliusCmsPlugin\Importer\AbstractImporter;
@@ -29,7 +28,6 @@ final class ProductImporter extends AbstractImporter implements ProductImporterI
         private RepositoryInterface $vendorRepository,
         private EntityManagerInterface $entityManager,
         private ProductDraftAcceptanceOperatorInterface $productDraftService,
-        private iterable $productDraftRelationClearers,
         private iterable $productDraftDataHandlers
     ) {
     }
@@ -57,8 +55,6 @@ final class ProductImporter extends AbstractImporter implements ProductImporterI
         $isEnabled = (array_key_exists('enabled', $row) && 'enabled' === $row['enabled']);
         $productListing->setEnabled($isEnabled);
 
-        $this->clearRelations($productDraft);
-
         /** @var ProductHandlerInterface $handler */
         foreach ($this->productDraftDataHandlers as $handler) {
             $handler->handle($productDraft, $row, $vendor);
@@ -66,10 +62,10 @@ final class ProductImporter extends AbstractImporter implements ProductImporterI
 
         $isAutoVerified = (false !== array_key_exists('enabled', $row) && 'true' === $row[self::AUTO_VERIFY]);
 
-        if ($isAutoVerified) {
+        if ($isAutoVerified && null !== $product) {
             $productListing->sendToVerification($productDraft);
-            //TODO SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry 'product_code-vendor_id' for key 'sylius_product.UNIQ_' (sylius_product.code)
-//            $this->productDraftService->acceptProductDraft($productDraft);
+
+            $this->productDraftService->acceptProductDraft($productDraft);
         }
 
         $this->entityManager->persist($productDraft);
@@ -79,13 +75,5 @@ final class ProductImporter extends AbstractImporter implements ProductImporterI
     public function getResourceCode(): string
     {
         return 'product';
-    }
-
-    public function clearRelations(ProductDraftInterface $productDraft): void
-    {
-        /** @var ProductDraftRelationsClearerInterface $productDraftRelationClearer */
-        foreach ($this->productDraftRelationClearers as $productDraftRelationClearer) {
-            $productDraftRelationClearer->clear($productDraft);
-        }
     }
 }

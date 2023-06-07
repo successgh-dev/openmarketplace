@@ -18,7 +18,6 @@ use BitBag\OpenMarketplace\Importer\Common\Trait\ImporterImageAwareTrait;
 use BitBag\OpenMarketplace\Importer\Product\Clearer\ProductDraftRelationsClearerInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Sylius\Component\Core\Model\ImageInterface;
 use Sylius\Component\Core\Uploader\ImageUploaderInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Webmozart\Assert\Assert;
@@ -94,6 +93,7 @@ final class ProductDraftImageHandler extends AbstractHandler
                 $productImage->setOwner($productDraft);
 
                 $this->entityManager->persist($productImage);
+                $this->entityManager->persist($productDraft);
             }
         } catch (\Exception $exception) {
             $this->logger->warning(\sprintf(

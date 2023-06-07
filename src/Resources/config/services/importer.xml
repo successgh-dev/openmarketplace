@@ -18,7 +18,6 @@
             <argument type="service" id="open_marketplace.repository.vendor" />
             <argument type="service" id="doctrine.orm.entity_manager" />
             <argument type="service" id="open_marketplace.acceptance_operator.product_draft_acceptance_operator" />
-            <argument type="tagged_iterator" tag="open_marketplace.import.product.clearer" />
             <argument type="tagged_iterator" tag="open_marketplace.import.product.handler" />
             <tag name="bitbag.cmsplugin.importer"/>
         </service>
@@ -27,18 +26,16 @@
                  id="open_marketplace.import.product.resolver">
             <argument type="service" id="open_marketplace.repository.product_listing" />
             <argument type="service" id="open_marketplace.factory.product_draft" />
-            <argument type="service" id="open_marketplace.factory.product_listing_from_draft_factory" />
+            <argument type="service" id="open_marketplace.factory.product_listing" />
         </service>
 
         <service class="BitBag\OpenMarketplace\Importer\Product\Clearer\ProductDraftAttributeClearer"
                  id="open_marketplace.import.product.clearer.product_attribute">
-            <tag name="open_marketplace.import.product.clearer" />
         </service>
 
         <service class="BitBag\OpenMarketplace\Importer\Product\Clearer\ProductDraftImageClearer"
                  id="open_marketplace.import.product.clearer.product_image">
             <argument type="service" id="open_marketplace.repository.product_draft_image" />
-            <tag name="open_marketplace.import.product.clearer" />
         </service>
 
         <service class="BitBag\OpenMarketplace\Importer\Product\Handler\ProductDraftImageHandler"
@@ -93,6 +90,7 @@
             <argument type="service" id="open_marketplace.import.product.factory.draft_attribute_value" />
             <argument type="service" id="doctrine.orm.entity_manager" />
             <argument type="service" id="sylius.context.locale" />
+            <argument type="service" id="open_marketplace.import.product.clearer.product_attribute" />
             <tag name="open_marketplace.import.product.handler" />
         </service>
 

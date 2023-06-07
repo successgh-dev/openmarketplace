@@ -26,7 +26,7 @@ final class ProductDraftTaxonHandler extends AbstractHandler
 
     protected static string $dataKey = 'category_code';
 
-    public const SHOW_IN_ALL_CATEGORIES = 'show_in_all_categories';
+    public const VISIBLE_IN_ALL_CATEGORY_LEVELS = 'visible_in_all_category_levels';
 
     public function __construct(
         private RepositoryInterface $taxonRepository,
@@ -54,8 +54,8 @@ final class ProductDraftTaxonHandler extends AbstractHandler
         }
 
         $showProductInAllCategories =
-            array_key_exists(self::SHOW_IN_ALL_CATEGORIES, $row) &&
-            'true' === $row[self::SHOW_IN_ALL_CATEGORIES];
+            array_key_exists(self::VISIBLE_IN_ALL_CATEGORY_LEVELS, $row) &&
+            'true' === $row[self::VISIBLE_IN_ALL_CATEGORY_LEVELS];
 
         $this->handleProductTaxonTree($productDraft, $taxon, $showProductInAllCategories);
 
