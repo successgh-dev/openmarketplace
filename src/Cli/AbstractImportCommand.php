@@ -54,7 +54,7 @@ abstract class AbstractImportCommand extends Command
     protected function configure(): void
     {
         $this
-            ->setDescription(self::$defaultDescription)
+            ->setDescription(self::$defaultDescription ?? '')
             ->addArgument('filepath', InputArgument::REQUIRED, 'Path to the CSV file containing the import data')
         ;
     }
