@@ -13,6 +13,7 @@ namespace spec\BitBag\OpenMarketplace\Importer\Product\Handler;
 
 use BitBag\OpenMarketplace\Entity\ProductListing\ProductDraftInterface;
 use BitBag\OpenMarketplace\Entity\ProductListing\ProductDraftTaxonInterface;
+use BitBag\OpenMarketplace\Importer\Product\Clearer\ProductDraftRelationsClearerInterface;
 use BitBag\OpenMarketplace\Importer\Product\Handler\ProductDraftTaxonHandler;
 use PhpSpec\ObjectBehavior;
 use Sylius\Component\Core\Model\TaxonInterface;
@@ -24,12 +25,14 @@ final class ProductDraftTaxonHandlerSpec extends ObjectBehavior
     public function let(
         RepositoryInterface $taxonRepository,
         FactoryInterface $productDraftTaxonFactory,
-        RepositoryInterface $productDraftTaxonRepository
+        RepositoryInterface $productDraftTaxonRepository,
+        ProductDraftRelationsClearerInterface $productDraftTaxonClearer
     ) {
         $this->beConstructedWith(
             $taxonRepository,
             $productDraftTaxonFactory,
-            $productDraftTaxonRepository
+            $productDraftTaxonRepository,
+            $productDraftTaxonClearer
         );
     }
 
@@ -42,19 +45,71 @@ final class ProductDraftTaxonHandlerSpec extends ObjectBehavior
         ProductDraftInterface $productDraft,
         RepositoryInterface $taxonRepository,
         ProductDraftTaxonInterface $productDraftTaxon,
-        RepositoryInterface $productDraftTaxonRepository,
+        ProductDraftRelationsClearerInterface $productDraftTaxonClearer,
         FactoryInterface $productDraftTaxonFactory,
         TaxonInterface $taxon
     ): void {
         $taxonRepository->findOneBy(['code' => 'test'])->shouldNotBeCalled();
 
-        $productDraft->getProductDraftTaxons()->shouldNotBeCalled();
-        $productDraft->removeProductDraftTaxon($productDraftTaxon)->shouldNotBeCalled();
-        $productDraftTaxonRepository->remove($productDraftTaxon)->shouldNotBeCalled();
+        $productDraftTaxonClearer->clear($productDraft)->shouldNotBeCalled();
 
         $taxon->getParent()->shouldNotBeCalled();
+        $productDraftTaxonFactory->createNew()->shouldNotBeCalled();
+        $productDraftTaxon->setProductDraft($productDraft)->shouldNotBeCalled();
+        $productDraftTaxon->setTaxon($taxon)->shouldNotBeCalled();
         $productDraft->setMainTaxon($taxon)->shouldNotBeCalled();
 
         $this->handle($productDraft, [], null);
+    }
+
+    public function it_handles_taxon_relation_without_generating_full_tree(
+        ProductDraftInterface $productDraft,
+        RepositoryInterface $taxonRepository,
+        ProductDraftTaxonInterface $productDraftTaxons,
+        ProductDraftTaxonInterface $productDraftTaxon,
+        ProductDraftRelationsClearerInterface $productDraftTaxonClearer,
+        FactoryInterface $productDraftTaxonFactory,
+        TaxonInterface $taxon
+    ): void {
+        $taxonRepository->findOneBy(['code' => 'test'])->willReturn($taxon);
+        $productDraftTaxonClearer->clear($productDraft)->shouldBeCalled();
+
+        $taxon->getParent()->willReturn(null);
+
+        $productDraftTaxonFactory->createNew()->willReturn($productDraftTaxon);
+        $productDraftTaxon->setProductDraft($productDraft)->shouldBeCalled();
+        $productDraftTaxon->setTaxon($taxon)->shouldBeCalled();
+        $productDraft->addProductDraftTaxon($productDraftTaxon)->shouldBeCalled();
+
+        $productDraft->setMainTaxon($taxon)->shouldBeCalled();
+
+        $this->handle($productDraft, ['taxon_code' => 'test'], null);
+    }
+
+    public function it_handles_taxon_relation_with_taxon_sub_tree(
+        ProductDraftInterface $productDraft,
+        RepositoryInterface $taxonRepository,
+        ProductDraftTaxonInterface $productDraftTaxon,
+        ProductDraftRelationsClearerInterface $productDraftTaxonClearer,
+        FactoryInterface $productDraftTaxonFactory,
+        TaxonInterface $taxon,
+        TaxonInterface $parentTaxon
+    ): void {
+        $taxonRepository->findOneBy(['code' => 'test'])->willReturn($taxon);
+
+        $productDraftTaxonClearer->clear($productDraft)->shouldBeCalled();
+
+        $taxon->getParent()->willReturn();
+        $parentTaxon->getCode()->willReturn('parent-test');
+        $parentTaxon->getParent()->willReturn(null);
+
+        $productDraftTaxonFactory->createNew()->willReturn($productDraftTaxon);
+        $productDraftTaxon->setProductDraft($productDraft)->shouldBeCalled();
+        $productDraftTaxon->setTaxon($taxon)->shouldBeCalled();
+        $productDraft->addProductDraftTaxon($productDraftTaxon)->shouldBeCalled();
+
+        $productDraft->setMainTaxon($taxon)->shouldBeCalled();
+
+        $this->handle($productDraft, ['taxon_code' => 'test', 'visible_in_all_taxon_levels' => 'true'], null);
     }
 }

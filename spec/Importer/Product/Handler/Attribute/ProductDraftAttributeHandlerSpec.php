@@ -11,9 +11,12 @@ declare(strict_types=1);
 
 namespace spec\BitBag\OpenMarketplace\Importer\Product\Handler\Attribute;
 
+use BitBag\OpenMarketplace\Entity\ProductListing\DraftAttributeInterface;
+use BitBag\OpenMarketplace\Entity\ProductListing\DraftAttributeValueInterface;
 use BitBag\OpenMarketplace\Entity\ProductListing\ProductDraftInterface;
 use BitBag\OpenMarketplace\Entity\VendorInterface;
 use BitBag\OpenMarketplace\Factory\DraftAttributeFactoryInterface;
+use BitBag\OpenMarketplace\Importer\Product\Clearer\ProductDraftRelationsClearerInterface;
 use BitBag\OpenMarketplace\Importer\Product\Factory\DraftAttributeTranslationFactoryInterface;
 use BitBag\OpenMarketplace\Importer\Product\Factory\DraftAttributeValueFactoryInterface;
 use BitBag\OpenMarketplace\Importer\Product\Handler\Attribute\ProductDraftAttributeHandler;
@@ -31,7 +34,8 @@ final class ProductDraftAttributeHandlerSpec extends ObjectBehavior
         DraftAttributeTranslationFactoryInterface $draftAttributeTranslationFactory,
         DraftAttributeValueFactoryInterface $draftAttributeValueFactory,
         EntityManagerInterface $entityManager,
-        LocaleContextInterface $localeContext
+        LocaleContextInterface $localeContext,
+        ProductDraftRelationsClearerInterface $productDraftAttributeClearer
     ) {
         $this->beConstructedWith(
             $draftAttributeRepository,
@@ -39,7 +43,8 @@ final class ProductDraftAttributeHandlerSpec extends ObjectBehavior
             $draftAttributeTranslationFactory,
             $draftAttributeValueFactory,
             $entityManager,
-            $localeContext
+            $localeContext,
+            $productDraftAttributeClearer
         );
     }
 
@@ -57,7 +62,8 @@ final class ProductDraftAttributeHandlerSpec extends ObjectBehavior
         LocaleContextInterface $localeContext,
         DraftAttributeFactoryInterface $draftAttributeFactory,
         DraftAttributeTranslationFactoryInterface $draftAttributeTranslationFactory,
-        VendorInterface $vendor
+        VendorInterface $vendor,
+        ProductDraftRelationsClearerInterface $productDraftAttributeClearer
     ): void {
         $draftAttributeValueFactory
             ->createWithData($attribute, $productDraft, 'locale', 'value')
@@ -69,21 +75,25 @@ final class ProductDraftAttributeHandlerSpec extends ObjectBehavior
         $draftAttributeTranslationFactory->createWithData('code', 'locale', $attribute)->shouldNotBeCalled();
         $entityManager->persist($attribute)->shouldNotBeCalled();
 
+        $productDraftAttributeClearer->clear($productDraft)->shouldNotBeCalled();
+
         $productDraft->addAttribute($attribute)->shouldNotBeCalled();
 
         $this->handle($productDraft, [], $vendor);
     }
 
-    public function it_adds_attributes_to_product_draft(
+    public function it_adds_new_attributes_to_product_draft(
         ProductDraftInterface $productDraft,
         DraftAttributeValueFactoryInterface $draftAttributeValueFactory,
-        AttributeInterface $attribute,
         RepositoryInterface $draftAttributeRepository,
         EntityManagerInterface $entityManager,
         LocaleContextInterface $localeContext,
         DraftAttributeFactoryInterface $draftAttributeFactory,
         DraftAttributeTranslationFactoryInterface $draftAttributeTranslationFactory,
-        VendorInterface $vendor
+        VendorInterface $vendor,
+        ProductDraftRelationsClearerInterface $productDraftAttributeClearer,
+        DraftAttributeInterface $draftAttribute,
+        DraftAttributeValueInterface $draftAttributeValue
     ): void {
         $row = [
             'type' => 'text',
@@ -91,17 +101,74 @@ final class ProductDraftAttributeHandlerSpec extends ObjectBehavior
             'value' => 'attribute_value',
         ];
 
+        $productDraftAttributeClearer->clear($productDraft)->shouldBeCalled();
+
+        $draftAttributeRepository->findOneBy(['code' => 'attribute_code'])->willReturn(null);
+
+        $draftAttributeFactory->createTyped('text', $vendor)->willReturn($draftAttribute);
+        $draftAttribute->setCode('attribute_code')->shouldBeCalled();
+
+        $localeContext->getLocaleCode()->willReturn('en');
+
+        $draftAttributeTranslationFactory->createWithData(
+            'attribute_code',
+            'en',
+            $draftAttribute
+        )->shouldBeCalled();
+
+        $entityManager->persist($draftAttribute);
+
         $draftAttributeValueFactory
-            ->createWithData($attribute, $productDraft, 'locale', 'value')
-            ->shouldNotBeCalled();
+            ->createWithData($draftAttribute, $productDraft, 'en', 'attribute_value')
+            ->willReturn($draftAttributeValue);
 
-        $localeContext->getLocaleCode()->shouldNotBeCalled();
-        $draftAttributeRepository->findOneBy([])->shouldNotBeCalled();
-        $draftAttributeTranslationFactory->createWithData('code', 'locale', $attribute)->shouldNotBeCalled();
-        $entityManager->persist($attribute)->shouldNotBeCalled();
+        $productDraft->addAttribute($draftAttributeValue)->shouldBeCalled();
 
-        $productDraft->addAttribute($attribute)->shouldNotBeCalled();
+        $this->handle($productDraft, ['attributes' => json_encode([$row])], $vendor);
+    }
 
-        $this->handle($productDraft, $row, $vendor);
+    public function it_adds_existing_attributes_to_product_draft(
+        ProductDraftInterface $productDraft,
+        DraftAttributeValueFactoryInterface $draftAttributeValueFactory,
+        RepositoryInterface $draftAttributeRepository,
+        EntityManagerInterface $entityManager,
+        LocaleContextInterface $localeContext,
+        DraftAttributeFactoryInterface $draftAttributeFactory,
+        DraftAttributeTranslationFactoryInterface $draftAttributeTranslationFactory,
+        VendorInterface $vendor,
+        ProductDraftRelationsClearerInterface $productDraftAttributeClearer,
+        DraftAttributeInterface $draftAttribute,
+        DraftAttributeValueInterface $draftAttributeValue
+    ): void {
+        $row = [
+            'type' => 'text',
+            'code' => 'attribute_code',
+            'value' => 'attribute_value',
+        ];
+
+        $productDraftAttributeClearer->clear($productDraft)->shouldBeCalled();
+
+        $localeContext->getLocaleCode()->willReturn('en');
+
+        $draftAttributeRepository->findOneBy(['code' => 'attribute_code'])->willReturn($draftAttribute);
+
+        $draftAttributeFactory->createTyped('text', $vendor)->shouldNotBeCalled();
+        $draftAttribute->setCode('attribute_code')->shouldNotBeCalled();
+
+        $draftAttributeTranslationFactory->createWithData(
+            'attribute_code',
+            'en',
+            $draftAttribute
+        )->shouldNotBeCalled();
+
+        $entityManager->persist($draftAttribute)->shouldNotBeCalled();
+
+        $draftAttributeValueFactory
+            ->createWithData($draftAttribute, $productDraft, 'en', 'attribute_value')
+            ->willReturn($draftAttributeValue);
+
+        $productDraft->addAttribute($draftAttributeValue)->shouldBeCalled();
+
+        $this->handle($productDraft, ['attributes' => json_encode([$row])], $vendor);
     }
 }

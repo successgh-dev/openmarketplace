@@ -15,6 +15,7 @@ use BitBag\OpenMarketplace\Entity\ProductListing\ProductDraftInterface;
 use BitBag\OpenMarketplace\Entity\ProductListing\ProductDraftTaxonInterface;
 use BitBag\OpenMarketplace\Entity\VendorInterface;
 use BitBag\OpenMarketplace\Importer\Common\Trait\ImporterTaxonAwareTrait;
+use BitBag\OpenMarketplace\Importer\Product\Clearer\ProductDraftRelationsClearerInterface;
 use Sylius\Component\Core\Model\TaxonInterface;
 use Sylius\Component\Resource\Factory\FactoryInterface;
 use Sylius\Component\Resource\Repository\RepositoryInterface;
@@ -24,14 +25,14 @@ final class ProductDraftTaxonHandler extends AbstractHandler
 {
     use ImporterTaxonAwareTrait;
 
-    protected static string $dataKey = 'category_code';
+    protected static string $dataKey = 'taxon_code';
 
-    public const VISIBLE_IN_ALL_CATEGORY_LEVELS = 'visible_in_all_category_levels';
+    public const VISIBLE_IN_ALL_CATEGORY_LEVELS = 'visible_in_all_taxon_levels';
 
     public function __construct(
         private RepositoryInterface $taxonRepository,
         private FactoryInterface $productDraftTaxonFactory,
-        private RepositoryInterface $productDraftTaxonRepository
+        private ProductDraftRelationsClearerInterface $productDraftTaxonClearer
     ) {
     }
 
@@ -48,15 +49,11 @@ final class ProductDraftTaxonHandler extends AbstractHandler
         $taxon = $this->taxonRepository->findOneBy(['code' => $row[self::$dataKey]]);
         Assert::notNull($taxon, \sprintf('Couldn\'t find taxon with code: %s', $row[self::$dataKey]));
 
-        foreach ($productDraft->getProductDraftTaxons() as $productDraftTaxon) {
-            $productDraft->removeProductDraftTaxon($productDraftTaxon);
-            $this->productDraftTaxonRepository->remove($productDraftTaxon);
-        }
+        $this->productDraftTaxonClearer->clear($productDraft);
 
         $showProductInAllCategories =
             array_key_exists(self::VISIBLE_IN_ALL_CATEGORY_LEVELS, $row) &&
             'true' === $row[self::VISIBLE_IN_ALL_CATEGORY_LEVELS];
-
         $this->handleProductTaxonTree($productDraft, $taxon, $showProductInAllCategories);
 
         $productDraft->setMainTaxon($taxon);

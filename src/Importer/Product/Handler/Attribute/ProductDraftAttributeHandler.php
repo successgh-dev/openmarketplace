@@ -50,7 +50,7 @@ final class ProductDraftAttributeHandler extends AbstractAttributeHandler
 
         $this->productDraftAttributeClearer->clear($productDraft);
 
-        foreach (json_decode($row[self::$dataKey], true) as $index => $attributeData) {
+        foreach (json_decode($row[self::$dataKey], true) as $attributeData) {
             $this->handleProductAttribute(
                 $attributeData['code'],
                 $attributeData['type'],

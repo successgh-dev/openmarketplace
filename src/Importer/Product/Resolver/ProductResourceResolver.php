@@ -39,11 +39,12 @@ final class ProductResourceResolver implements ProductResourceResolverInterface
             'code' => $identifier,
         ]);
 
-        if (null !== $productListing) {
-            return $productListing;
+        if (null === $productListing) {
+            /** @var ProductListingInterface $productListing */
+            $productListing = $this->productListingFactory->createNew();
         }
 
-        return $this->productDraftFactory->$factoryMethod();
+        return $productListing;
     }
 
     public function getResourceByCodeAndVendor(

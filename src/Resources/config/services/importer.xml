@@ -12,6 +12,11 @@
         <service class="BitBag\OpenMarketplace\Importer\Common\Reader\CsvReader"
                  id="bitbag_sylius_cms_plugin.reader.csv" />
 
+        <service class="BitBag\OpenMarketplace\Importer\Common\Helper\ImporterImageFileHelper"
+                 id="open_marketplace.import.common.helper.importer_image_file_helper">
+            <argument type="service" id="logger" />
+        </service>
+
         <service class="BitBag\OpenMarketplace\Importer\Product\ProductImporter"
                  id="open_marketplace.import.product.importer">
             <argument type="service" id="open_marketplace.import.product.resolver" />
@@ -38,6 +43,11 @@
             <argument type="service" id="open_marketplace.repository.product_draft_image" />
         </service>
 
+        <service class="BitBag\OpenMarketplace\Importer\Product\Clearer\ProductDraftTaxonClearer"
+                 id="open_marketplace.import.product.clearer.product_draft_taxon">
+            <argument type="service" id="open_marketplace.repository.product_draft_taxons" />
+        </service>
+
         <service class="BitBag\OpenMarketplace\Importer\Product\Handler\ProductDraftImageHandler"
                  id="open_marketplace.import.product.handler.product_draft_image">
             <argument type="service" id="open_marketplace.factory.product_draft_image" />
@@ -45,6 +55,7 @@
             <argument type="service" id="logger" />
             <argument type="service" id="open_marketplace.import.product.clearer.product_image" />
             <argument type="service" id="doctrine.orm.entity_manager" />
+            <argument type="service" id="open_marketplace.import.common.helper.importer_image_file_helper" />
             <argument>%kernel.project_dir%</argument>
             <argument>%env(TEMP_MEDIA_PATH)%</argument>
             <tag name="open_marketplace.import.product.handler" />
@@ -54,7 +65,7 @@
                  id="open_marketplace.import.product.handler.product_draft_taxon">
             <argument type="service" id="sylius.repository.taxon" />
             <argument type="service" id="open_marketplace.factory.product_draft_taxons" />
-            <argument type="service" id="open_marketplace.repository.product_draft_taxons" />
+            <argument type="service" id="open_marketplace.import.product.clearer.product_draft_taxon" />
             <tag name="open_marketplace.import.product.handler" />
         </service>
 
