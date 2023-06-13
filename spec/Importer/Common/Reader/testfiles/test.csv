@@ -1,0 +1,2 @@
+product_code|vendor_id|name|attributes|url|images|description|enabled|taxon_code|auto_verify|prices|shipping_category
+test_product|test_uuid|Test product|"[{""type"":""text"",""code"":""TestAttributeCode"",""value"":""TestAttributeValue""}]"|https://example.com|"[{""type"": ""main"", ""url"": ""https://example.com/example.png""}]"|Test product|true|for_home|true|"{""open-marketplace"":{""minimum_price"":123,""original_price"":345,""price"":456},""non-existant-channel"":{""minimum_price"":321,""original_price"":543,""price"":654}}"|default

@@ -29,7 +29,7 @@ final class CsvReaderSpec extends ObjectBehavior
 
     public function it_reads_csv_file_and_returns_iterator(): void
     {
-        $filePath = 'file.csv';
+        $filePath = 'spec/Importer/Common/Reader/testfiles/test.csv';
 
         $this->read($filePath)
             ->shouldReturnAnInstanceOf(\Iterator::class);
