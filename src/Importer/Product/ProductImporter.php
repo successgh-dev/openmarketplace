@@ -52,7 +52,7 @@ final class ProductImporter extends AbstractImporter implements ProductImporterI
             $product->setVendor($vendor);
         }
 
-        $isEnabled = (array_key_exists('enabled', $row) && 'enabled' === $row['enabled']);
+        $isEnabled = (array_key_exists('enabled', $row) && 'true' === $row['enabled']);
         $productListing->setEnabled($isEnabled);
 
         /** @var ProductHandlerInterface $handler */
@@ -60,9 +60,15 @@ final class ProductImporter extends AbstractImporter implements ProductImporterI
             $handler->handle($productDraft, $row, $vendor);
         }
 
-        $isAutoVerified = (false !== array_key_exists('enabled', $row) && 'true' === $row[self::AUTO_VERIFY]);
+        $isAutoVerified =
+            ($isEnabled &&
+            array_key_exists(self::AUTO_VERIFY, $row) &&
+            'true' === $row[self::AUTO_VERIFY]);
 
-        if ($isAutoVerified && null !== $product) {
+        dump($isAutoVerified, [$isEnabled,
+            array_key_exists(self::AUTO_VERIFY, $row),
+            'true' === $row[self::AUTO_VERIFY], ]);
+        if ($isAutoVerified) {
             $productListing->sendToVerification($productDraft);
 
             $this->productDraftService->acceptProductDraft($productDraft);
