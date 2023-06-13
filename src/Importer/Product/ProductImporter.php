@@ -65,9 +65,6 @@ final class ProductImporter extends AbstractImporter implements ProductImporterI
             array_key_exists(self::AUTO_VERIFY, $row) &&
             'true' === $row[self::AUTO_VERIFY]);
 
-        dump($isAutoVerified, [$isEnabled,
-            array_key_exists(self::AUTO_VERIFY, $row),
-            'true' === $row[self::AUTO_VERIFY], ]);
         if ($isAutoVerified) {
             $productListing->sendToVerification($productDraft);
 
