@@ -25,13 +25,11 @@ final class ProductDraftTaxonHandlerSpec extends ObjectBehavior
     public function let(
         RepositoryInterface $taxonRepository,
         FactoryInterface $productDraftTaxonFactory,
-        RepositoryInterface $productDraftTaxonRepository,
         ProductDraftRelationsClearerInterface $productDraftTaxonClearer
     ) {
         $this->beConstructedWith(
             $taxonRepository,
             $productDraftTaxonFactory,
-            $productDraftTaxonRepository,
             $productDraftTaxonClearer
         );
     }
