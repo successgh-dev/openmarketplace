@@ -41,11 +41,11 @@ final class ImporterImageFileHelper implements ImporterImageFileHelperInterface
             if (!file_exists($filePath)) {
                 $fileContents = file_get_contents($imageUrl);
                 file_put_contents($filePath, $fileContents);
-
-                $filename = $this->getFilenameFromPath($filePath);
-
-                return new UploadedFile($filePath, $filename);
             }
+
+            $filename = $this->getFilenameFromPath($filePath);
+
+            return new UploadedFile($filePath, $filename);
         } catch (\Exception $exception) {
             $this->logger->warning(\sprintf('Image url %s is invalid', $imageUrl));
         }

@@ -83,7 +83,7 @@ final class ProductDraftImageHandler extends AbstractHandler
                 if (null === $uploadedImage) {
                     throw new ImporterInvalidImagePathException(
                         \sprintf(
-                            'Couldn\'t download save image from url %s to following path: %s',
+                            'Couldn\'t save image from url %s to following path: %s',
                             $imageUrl,
                             $filePath
                         )
