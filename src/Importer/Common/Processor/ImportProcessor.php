@@ -43,8 +43,7 @@ final class ImportProcessor implements ImportProcessorInterface
         string $resourceCode,
         string $filePath,
         int $batchSize = 25
-    ): void
-    {
+    ): void {
         $importer = $this->importerChain->getImporterForResource($resourceCode);
         $data = $this->reader->read($filePath);
 
