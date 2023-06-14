@@ -8,6 +8,7 @@ use BitBag\SyliusCmsPlugin\Processor\ImportProcessorInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Stopwatch\Stopwatch;
 
@@ -39,7 +40,10 @@ abstract class AbstractImportCommand extends Command
         }
 
         $stopwatch->start('import');
-        $this->importProcessor->process($this->getResourceName(), $filepath);
+
+        /** @phpstan-ignore-next-line  */
+        $this->importProcessor->processBatch($this->getResourceName(), $filepath, (int) $input->getOption('batch-size'));
+
         $event = $stopwatch->stop('import');
 
         $output->writeln(\sprintf(
@@ -55,7 +59,18 @@ abstract class AbstractImportCommand extends Command
     {
         $this
             ->setDescription(self::$defaultDescription ?? '')
-            ->addArgument('filepath', InputArgument::REQUIRED, 'Path to the CSV file containing the import data')
+            ->addArgument(
+                'filepath',
+                InputArgument::REQUIRED,
+                'Path to the CSV file containing the import data'
+            )
+            ->addOption(
+                'batch-size',
+                'b',
+                InputOption::VALUE_OPTIONAL,
+                'Sets the amount of products persisted to database before running the cleanup command',
+                25
+            )
         ;
     }
 }

@@ -72,7 +72,6 @@ final class ProductImporter extends AbstractImporter implements ProductImporterI
         }
 
         $this->entityManager->persist($productDraft);
-        $this->entityManager->flush();
     }
 
     public function getResourceCode(): string

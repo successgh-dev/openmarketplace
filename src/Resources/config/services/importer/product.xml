@@ -9,14 +9,6 @@
             <tag name="console.command"/>
         </service>
 
-        <service class="BitBag\OpenMarketplace\Importer\Common\Reader\CsvReader"
-                 id="bitbag_sylius_cms_plugin.reader.csv" />
-
-        <service class="BitBag\OpenMarketplace\Importer\Common\Helper\ImporterImageFileHelper"
-                 id="open_marketplace.import.common.helper.importer_image_file_helper">
-            <argument type="service" id="logger" />
-        </service>
-
         <service class="BitBag\OpenMarketplace\Importer\Product\ProductImporter"
                  id="open_marketplace.import.product.importer">
             <argument type="service" id="open_marketplace.import.product.resolver" />
@@ -34,6 +26,7 @@
             <argument type="service" id="open_marketplace.factory.product_listing" />
         </service>
 
+        <!-- clearers -->
         <service class="BitBag\OpenMarketplace\Importer\Product\Clearer\ProductDraftAttributeClearer"
                  id="open_marketplace.import.product.clearer.product_attribute">
         </service>
@@ -48,6 +41,7 @@
             <argument type="service" id="open_marketplace.repository.product_draft_taxons" />
         </service>
 
+        <!-- handlers -->
         <service class="BitBag\OpenMarketplace\Importer\Product\Handler\ProductDraftImageHandler"
                  id="open_marketplace.import.product.handler.product_draft_image">
             <argument type="service" id="open_marketplace.factory.product_draft_image" />
@@ -105,7 +99,7 @@
             <tag name="open_marketplace.import.product.handler" />
         </service>
 
-
+        <!-- factories -->
         <service class="BitBag\OpenMarketplace\Importer\Product\Factory\DraftAttributeValueFactory"
                  id="open_marketplace.import.product.factory.draft_attribute_value"/>
 
