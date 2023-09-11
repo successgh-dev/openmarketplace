@@ -16,8 +16,10 @@ use BitBag\OpenMarketplace\Component\Core\Api\SectionResolver\ShopVendorApiSecti
 use BitBag\OpenMarketplace\Component\Vendor\Entity\ShopUserInterface;
 use Doctrine\ORM\QueryBuilder;
 use Sylius\Bundle\ApiBundle\Context\UserContextInterface;
+use Sylius\Bundle\ApiBundle\Serializer\ContextKeys;
 use Sylius\Bundle\CoreBundle\SectionResolver\SectionProviderInterface;
 use Sylius\Component\Core\Model\OrderInterface;
+use Symfony\Component\HttpFoundation\Request;
 
 final class OrderMethodsItemExtension implements QueryItemExtensionInterface
 {
@@ -37,6 +39,11 @@ final class OrderMethodsItemExtension implements QueryItemExtensionInterface
         array $context = []
     ): void {
         if (!is_a($resourceClass, OrderInterface::class, true)) {
+            return;
+        }
+
+        $httpRequestMethodType = $context[ContextKeys::HTTP_REQUEST_METHOD_TYPE];
+        if (Request::METHOD_GET === $httpRequestMethodType) {
             return;
         }
 

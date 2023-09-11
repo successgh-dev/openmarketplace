@@ -16,8 +16,10 @@ use BitBag\OpenMarketplace\Component\Core\Api\SectionResolver\ShopVendorApiSecti
 use BitBag\OpenMarketplace\Component\Vendor\Entity\ShopUserInterface;
 use Doctrine\ORM\QueryBuilder;
 use Sylius\Bundle\ApiBundle\Context\UserContextInterface;
+use Sylius\Bundle\ApiBundle\Serializer\ContextKeys;
 use Sylius\Bundle\CoreBundle\SectionResolver\SectionProviderInterface;
 use Sylius\Component\Core\Model\OrderInterface;
+use Symfony\Component\HttpFoundation\Request;
 
 final class OrderGetMethodItemExtension implements QueryItemExtensionInterface
 {
@@ -44,8 +46,13 @@ final class OrderGetMethodItemExtension implements QueryItemExtensionInterface
             return;
         }
 
+        if (Request::METHOD_GET !== $context[ContextKeys::HTTP_REQUEST_METHOD_TYPE]) {
+            return;
+        }
+
         if ($this->userContext->getUser() instanceof ShopUserInterface) {
             $rootAlias = $queryBuilder->getRootAliases()[0];
+
             $queryBuilder
                 ->andWhere(sprintf('%s.mode != :primaryMode', $rootAlias))
                 ->setParameter('primaryMode', \BitBag\OpenMarketplace\Component\Order\Entity\OrderInterface::PRIMARY_ORDER_MODE)
