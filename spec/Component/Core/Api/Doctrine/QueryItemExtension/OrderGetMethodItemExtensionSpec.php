@@ -22,6 +22,7 @@ use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
 use Sylius\Bundle\ApiBundle\Context\UserContextInterface;
 use Sylius\Bundle\ApiBundle\SectionResolver\ShopApiSection;
+use Sylius\Bundle\ApiBundle\Serializer\ContextKeys;
 use Sylius\Bundle\CoreBundle\SectionResolver\SectionProviderInterface;
 use Sylius\Component\Core\Model\AdminUserInterface;
 
@@ -103,11 +104,15 @@ final class OrderGetMethodItemExtensionSpec extends ObjectBehavior
         $sectionProvider->getSection()->willReturn($shopApiSection);
         $userContext->getUser()->willReturn($user);
 
+        $context[ContextKeys::HTTP_REQUEST_METHOD_TYPE] = 'GET';
+
         $this->applyToItem(
             $queryBuilder,
             $queryNameGenerator,
             OrderInterface::class,
-            ['id']
+            ['id'],
+            null,
+            $context
         );
 
         $queryBuilder->getRootAliases()->shouldNotHaveBeenCalled();
@@ -118,7 +123,7 @@ final class OrderGetMethodItemExtensionSpec extends ObjectBehavior
             OrderInterface::class,
             ['id'],
             null,
-            []
+            $context
         )->shouldHaveBeenCalled();
     }
 
@@ -136,11 +141,15 @@ final class OrderGetMethodItemExtensionSpec extends ObjectBehavior
         $queryBuilder->getRootAliases()->willReturn(['root']);
         $queryBuilder->andWhere(Argument::any())->willReturn($queryBuilder);
 
+        $context[ContextKeys::HTTP_REQUEST_METHOD_TYPE] = 'GET';
+
         $this->applyToItem(
             $queryBuilder,
             $queryNameGenerator,
             OrderInterface::class,
-            ['id']
+            ['id'],
+            null,
+            $context
         );
 
         $queryBuilder->andWhere('root.mode != :primaryMode')->shouldHaveBeenCalled();
@@ -152,7 +161,7 @@ final class OrderGetMethodItemExtensionSpec extends ObjectBehavior
             OrderInterface::class,
             ['id'],
             null,
-            []
+            $context
         )->shouldHaveBeenCalled();
     }
 }

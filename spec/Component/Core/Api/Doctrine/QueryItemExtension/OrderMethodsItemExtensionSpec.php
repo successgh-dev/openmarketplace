@@ -22,6 +22,7 @@ use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
 use Sylius\Bundle\ApiBundle\Context\UserContextInterface;
 use Sylius\Bundle\ApiBundle\SectionResolver\ShopApiSection;
+use Sylius\Bundle\ApiBundle\Serializer\ContextKeys;
 use Sylius\Bundle\CoreBundle\SectionResolver\SectionProviderInterface;
 use Sylius\Component\Core\Model\AdminUserInterface;
 
@@ -74,11 +75,15 @@ final class OrderMethodsItemExtensionSpec extends ObjectBehavior
     ): void {
         $sectionProvider->getSection()->willReturn($shopVendorApiSection);
 
+        $context[ContextKeys::HTTP_REQUEST_METHOD_TYPE] = 'POST';
+
         $this->applyToItem(
             $queryBuilder,
             $queryNameGenerator,
             OrderInterface::class,
-            ['id']
+            ['id'],
+            null,
+            $context
         );
 
         $baseOrderMethodsItemExtension->applyToItem(
@@ -103,11 +108,15 @@ final class OrderMethodsItemExtensionSpec extends ObjectBehavior
         $sectionProvider->getSection()->willReturn($shopApiSection);
         $userContext->getUser()->willReturn($user);
 
+        $context[ContextKeys::HTTP_REQUEST_METHOD_TYPE] = 'POST';
+
         $this->applyToItem(
             $queryBuilder,
             $queryNameGenerator,
             OrderInterface::class,
-            ['id']
+            ['id'],
+            null,
+            $context
         );
 
         $queryBuilder->getRootAliases()->shouldNotHaveBeenCalled();
@@ -118,7 +127,7 @@ final class OrderMethodsItemExtensionSpec extends ObjectBehavior
             OrderInterface::class,
             ['id'],
             null,
-            []
+            $context
         )->shouldHaveBeenCalled();
     }
 
@@ -136,14 +145,18 @@ final class OrderMethodsItemExtensionSpec extends ObjectBehavior
         $queryBuilder->getRootAliases()->willReturn(['root']);
         $queryBuilder->andWhere(Argument::any())->willReturn($queryBuilder);
 
+        $context[ContextKeys::HTTP_REQUEST_METHOD_TYPE] = 'POST';
+
         $this->applyToItem(
             $queryBuilder,
             $queryNameGenerator,
             OrderInterface::class,
-            ['id']
+            ['id'],
+            null,
+            $context
         );
 
-        $queryBuilder->andWhere('root.mode != :primaryMode')->shouldHaveBeenCalled();
+        $queryBuilder->andWhere('root.mode = :primaryMode')->shouldHaveBeenCalled();
         $queryBuilder->setParameter('primaryMode', OrderInterface::PRIMARY_ORDER_MODE)->shouldHaveBeenCalled();
 
         $baseOrderMethodsItemExtension->applyToItem(
@@ -152,7 +165,7 @@ final class OrderMethodsItemExtensionSpec extends ObjectBehavior
             OrderInterface::class,
             ['id'],
             null,
-            []
+            $context
         )->shouldHaveBeenCalled();
     }
 }

@@ -46,7 +46,8 @@ final class OrderGetMethodItemExtension implements QueryItemExtensionInterface
             return;
         }
 
-        if (Request::METHOD_GET !== $context[ContextKeys::HTTP_REQUEST_METHOD_TYPE]) {
+        $httpRequestMethodType = $context[ContextKeys::HTTP_REQUEST_METHOD_TYPE];
+        if (Request::METHOD_GET !== $httpRequestMethodType) {
             return;
         }
 
